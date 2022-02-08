@@ -18,6 +18,7 @@ class StaticDriverTest extends TestCase
     public function setUp(): void
     {
         $this->platform = $this->createMock(AbstractPlatform::class);
+        $this->platform->closureForTest = function (): void {};
     }
 
     public function testReturnCorrectPlatform(): void
@@ -42,6 +43,7 @@ class StaticDriverTest extends TestCase
             'user' => 'user',
             'password' => 'password',
             'port' => null,
+            'platform' => $this->platform,
             'dama.keep_static' => true,
             'dama.connection_name' => 'foo',
         ];
