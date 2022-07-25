@@ -1,7 +1,7 @@
 [![PHP Version](https://img.shields.io/packagist/php-v/dama/doctrine-test-bundle)](https://packagist.org/packages/dama/doctrine-test-bundle)
 [![Stable release](https://img.shields.io/packagist/v/dama/doctrine-test-bundle)](https://packagist.org/packages/dama/doctrine-test-bundle)
 
-### What does it do? :) 
+### What does it do? :blush:
 
 This bundle provides features that help you run your Symfony-framework-based App's testsuite more efficiently with isolated tests.
 
