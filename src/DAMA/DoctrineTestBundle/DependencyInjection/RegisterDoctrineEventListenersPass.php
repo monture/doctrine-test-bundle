@@ -27,12 +27,14 @@ final class RegisterDoctrineEventListenersPass implements CompilerPassInterface
                 || isset($enableStaticConnectionsConfig[$name]) && $enableStaticConnectionsConfig[$name] === true
             ) {
                 $enabledConnections[] = $name;
-                $postConnectListenerDef = new Definition(PostConnectEventListener::class);
-                $postConnectListenerDef->addTag(
-                    'doctrine.event_listener',
-                    ['event' => Events::postConnect, 'connection' => $name, 'priority' => 1000]
-                );
-                $container->setDefinition('dama.doctrine.dbal.post_connect_event_listener.'.$name, $postConnectListenerDef);
+                if (class_exists(Events::class)) {
+                    $postConnectListenerDef = new Definition(PostConnectEventListener::class);
+                    $postConnectListenerDef->addTag(
+                        'doctrine.event_listener',
+                        ['event' => Events::postConnect, 'connection' => $name, 'priority' => 1000]
+                    );
+                    $container->setDefinition('dama.doctrine.dbal.post_connect_event_listener.'.$name, $postConnectListenerDef);
+                }
             }
         }
 

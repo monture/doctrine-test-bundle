@@ -13,4 +13,7 @@ parameters:
         - %currentWorkingDirectory%/src/DAMA/DoctrineTestBundle/Doctrine/DBAL/AbstractStaticConnectionV3.php
         - %currentWorkingDirectory%/src/DAMA/DoctrineTestBundle/Doctrine/DBAL/StaticConnection.php
 
+    ignoreErrors:
+        - '#Parameter \#1 \$params of method .*ConnectionFactory.*NEVER#'
+
 

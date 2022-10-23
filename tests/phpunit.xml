@@ -12,7 +12,7 @@
     bootstrap="./bootstrap.php"
 >
     <php>
-        <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[direct]=2" />
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[direct]=3" />
     </php>
 
     <extensions>
