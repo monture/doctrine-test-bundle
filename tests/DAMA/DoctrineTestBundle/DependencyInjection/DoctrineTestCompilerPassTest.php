@@ -4,7 +4,6 @@ namespace Tests\DAMA\DoctrineTestBundle\DependencyInjection;
 
 use DAMA\DoctrineTestBundle\DependencyInjection\DAMADoctrineTestExtension;
 use DAMA\DoctrineTestBundle\DependencyInjection\DoctrineTestCompilerPass;
-use DAMA\DoctrineTestBundle\DependencyInjection\RegisterDoctrineEventListenersPass;
 use DAMA\DoctrineTestBundle\Doctrine\Cache\Psr6StaticArrayCache;
 use DAMA\DoctrineTestBundle\Doctrine\Cache\StaticArrayCache;
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
@@ -44,7 +43,13 @@ class DoctrineTestCompilerPassTest extends TestCase
 
         $containerBuilder->setDefinition('doctrine.dbal.a_connection', new Definition(Connection::class, [[]]));
         $containerBuilder->setDefinition('doctrine.dbal.b_connection', new Definition(Connection::class, [[]]));
-        $containerBuilder->setDefinition('doctrine.dbal.c_connection', new Definition(Connection::class, [[]]));
+        $containerBuilder->setDefinition('doctrine.dbal.c_connection', new Definition(Connection::class, [[
+            'primary' => [],
+            'replica' => [
+                'one' => [],
+                'two' => [],
+            ],
+        ]]));
 
         $containerBuilder->setDefinition(
             'doctrine.dbal.a_connection.configuration',
@@ -60,7 +65,6 @@ class DoctrineTestCompilerPassTest extends TestCase
             $expectationCallback($this, $containerBuilder);
         }
 
-        (new RegisterDoctrineEventListenersPass())->process($containerBuilder);
         (new DoctrineTestCompilerPass())->process($containerBuilder);
 
         foreach (array_keys($containerBuilder->getParameterBag()->all()) as $parameterName) {
@@ -81,12 +85,6 @@ class DoctrineTestCompilerPassTest extends TestCase
         yield 'default config' => [
             $defaultConfig,
             function (ContainerBuilder $containerBuilder): void {
-                $this->assertTrue($containerBuilder->hasDefinition('dama.doctrine.dbal.connection_factory'));
-                $this->assertSame(
-                    'doctrine.dbal.connection_factory',
-                    $containerBuilder->getDefinition('dama.doctrine.dbal.connection_factory')->getDecoratedService()[0]
-                );
-
                 foreach (self::CACHE_SERVICE_IDS as $id) {
                     $this->assertFalse($containerBuilder->hasAlias($id));
                     $this->assertFalse($containerBuilder->hasDefinition($id));
@@ -135,7 +133,6 @@ class DoctrineTestCompilerPassTest extends TestCase
                 'enable_static_query_cache' => false,
             ],
             function (ContainerBuilder $containerBuilder): void {
-                $this->assertFalse($containerBuilder->hasDefinition('dama.doctrine.dbal.connection_factory'));
                 $this->assertFalse($containerBuilder->hasDefinition('doctrine.orm.a_metadata_cache'));
 
                 $this->assertEquals(
@@ -164,8 +161,6 @@ class DoctrineTestCompilerPassTest extends TestCase
                 'enable_static_query_cache' => true,
             ],
             function (ContainerBuilder $containerBuilder): void {
-                $this->assertTrue($containerBuilder->hasDefinition('dama.doctrine.dbal.connection_factory'));
-
                 $this->assertSame([
                     'dama.keep_static' => true,
                     'dama.connection_name' => 'a',
@@ -173,10 +168,27 @@ class DoctrineTestCompilerPassTest extends TestCase
 
                 $this->assertSame([], $containerBuilder->getDefinition('doctrine.dbal.b_connection')->getArgument(0));
 
-                $this->assertSame([
-                    'dama.keep_static' => true,
-                    'dama.connection_name' => 'c',
-                ], $containerBuilder->getDefinition('doctrine.dbal.c_connection')->getArgument(0));
+                $this->assertSame(
+                    [
+                        'primary' => [
+                            'dama.keep_static' => true,
+                            'dama.connection_name' => 'c',
+                        ],
+                        'replica' => [
+                            'one' => [
+                                'dama.keep_static' => true,
+                                'dama.connection_name' => 'c.one',
+                            ],
+                            'two' => [
+                                'dama.keep_static' => true,
+                                'dama.connection_name' => 'c.two',
+                            ],
+                        ],
+                        'dama.keep_static' => true,
+                        'dama.connection_name' => 'c',
+                    ],
+                    $containerBuilder->getDefinition('doctrine.dbal.c_connection')->getArgument(0)
+                );
             },
         ];
 
